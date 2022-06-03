@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "./src/Lexer.cc"
+#include "src/parser/Lexer.cc"
 
 using namespace  std;
 

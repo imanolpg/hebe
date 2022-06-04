@@ -83,6 +83,9 @@ namespace {
     };
 
 
+    /**
+     * Function definition node class
+     */
     class FunctionAST {
         std::unique_ptr<PrototypeAST> Proto;
         std::unique_ptr<ExprAST> Body;

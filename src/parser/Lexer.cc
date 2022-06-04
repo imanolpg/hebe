@@ -20,7 +20,7 @@ enum Token {
     tok_number = -5
 };
 
-static std::string IdentifierString;  // value if token is tok_identifier
+static std::string IdentifierStr;  // value if token is tok_identifier
 static double NumVal;           // value if token is tok_number
 
 /**
@@ -36,12 +36,12 @@ static int gettok() {
 
     // recognize identifiers and keywords
     if (isalpha(LastChar)) {    // [a-zA-Z][a-zA-Z0-9]*
-        IdentifierString = LastChar;
+        IdentifierStr = LastChar;
         while (isalnum((LastChar = getchar())))
-            IdentifierString += LastChar;
-        if (IdentifierString == "def")
+            IdentifierStr += LastChar;
+        if (IdentifierStr == "def")
             return tok_def;
-        if (IdentifierString == "extern")
+        if (IdentifierStr == "extern")
             return tok_extern;
         return tok_identifier;
     }

@@ -67,4 +67,11 @@ static int gettok() {
         if (LastChar != EOF)
             return gettok();
     }
+
+    if (LastChar == EOF)
+        return tok_eof;
+
+    int ThisChar = LastChar;
+    LastChar = getchar();
+    return ThisChar;
 }

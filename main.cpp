@@ -1,8 +1,6 @@
-#include <iostream>
 
-#include "src/parser/Parser.cc"
+#include "src/Parser.h"
 
-using namespace  std;
 
 int main(int argc, char **argv) {
     MainLoop();

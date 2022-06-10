@@ -4,23 +4,19 @@
  * @project hebe
  */
 
-#include <map>
+#include "Parser.h"
 
-#include "Lexer.cc"
-#include "AbstractSyntaxTree.cc"
 
-static std::unique_ptr<ExprAST> ParseExpression ();
-static std::unique_ptr<ExprAST> ParseBinOpRHS (int ExprPrec, std::unique_ptr<ExprAST> LHS);
-
-static int CurTok;
-static int getNextToken() {
+int getNextToken() {
     return CurTok = gettok();
 }
+
 
 std::unique_ptr<ExprAST> LogError(const char *Str) {
     fprintf(stderr, "LogError: %s\n", Str);
     return nullptr;
 }
+
 
 std::unique_ptr<PrototypeAST> LogErrorP(const char *Str) {
     LogError(Str);
@@ -31,7 +27,7 @@ std::unique_ptr<PrototypeAST> LogErrorP(const char *Str) {
  * Parse numeric literals
  * @return ExprAST numeric value
  */
-static std::unique_ptr<ExprAST> ParseNumberExpr() {
+std::unique_ptr<ExprAST> ParseNumberExpr() {
     auto Result = std::make_unique<NumberExprAST>(NumVal);
     getNextToken(); // consume the number
     return std::move(Result);
@@ -41,7 +37,7 @@ static std::unique_ptr<ExprAST> ParseNumberExpr() {
  * Manage open and close parenthesis
  * @return ExprAST parsed
  */
-static std::unique_ptr<ExprAST> ParseParenExpr() {
+std::unique_ptr<ExprAST> ParseParenExpr() {
     getNextToken(); // eat (.
     auto V = ParseExpression();
     if (!V)
@@ -58,13 +54,13 @@ static std::unique_ptr<ExprAST> ParseParenExpr() {
  * Parse identifiers expression
  * @return
  */
-static std::unique_ptr<ExprAST> ParseIdentifierExpr() {
-    std::string IdNames = IdentifierStr;
+std::unique_ptr<ExprAST> ParseIdentifierExpr() {
+    std::string IdName = IdentifierStr;
 
     getNextToken();
 
     if (CurTok != '(')
-        return std::make_unique<VariableExprAST>(IdNames);
+        return std::make_unique<VariableExprAST>(IdName);
 
     getNextToken();
     std::vector<std::unique_ptr<ExprAST>> Args;
@@ -84,6 +80,9 @@ static std::unique_ptr<ExprAST> ParseIdentifierExpr() {
             getNextToken();
         }
     }
+
+    getNextToken();
+    return std::make_unique<CallExprAST>(IdName, std::move(Args));
 }
 
 
@@ -91,7 +90,7 @@ static std::unique_ptr<ExprAST> ParseIdentifierExpr() {
  * Primary function to determine the parsing type is needed
  * @return ExprAST object from parsing logic
  */
-static std::unique_ptr<ExprAST> ParsePrimary() {
+std::unique_ptr<ExprAST> ParsePrimary() {
     switch (CurTok) {
         case tok_identifier:
             return ParseIdentifierExpr();
@@ -107,13 +106,11 @@ static std::unique_ptr<ExprAST> ParsePrimary() {
 
 // Binary Expressions
 
-static std::map<char, int> BinopPrecedence; // precendence for the binary operations
-
 /**
  * Primary binoprhs
  * @return
  */
-static std::unique_ptr<ExprAST> ParseExpression () {
+std::unique_ptr<ExprAST> ParseExpression () {
     auto LHS = ParsePrimary();
     if (!LHS)
         return nullptr;
@@ -126,7 +123,7 @@ static std::unique_ptr<ExprAST> ParseExpression () {
  * Gets the preference of the binary operator
  * @return preference of the binary operator
  */
-static int GetTokPrecedence() {
+int GetTokPrecedence() {
     if (!isascii(CurTok))
         return -1;
 
@@ -145,8 +142,7 @@ static int GetTokPrecedence() {
  * @param LHS left hand side operand
  * @return LHS if the predecende is lower than the LHS of the argument
  */
-static std::unique_ptr<ExprAST> ParseBinOpRHS (int ExprPrec,
-                                               std::unique_ptr<ExprAST> LHS) {
+std::unique_ptr<ExprAST> ParseBinOpRHS (int ExprPrec, std::unique_ptr<ExprAST> LHS) {
     while (true) {
         int TokPrec = GetTokPrecedence();
 
@@ -178,7 +174,7 @@ static std::unique_ptr<ExprAST> ParseBinOpRHS (int ExprPrec,
  * Parse prototypes
  * @return PrototypeAST object
  */
-static std::unique_ptr<PrototypeAST> ParsePrototype() {
+std::unique_ptr<PrototypeAST> ParsePrototype() {
     if (CurTok != tok_identifier)
         return LogErrorP("Expected function name in prototype");
 
@@ -204,7 +200,7 @@ static std::unique_ptr<PrototypeAST> ParsePrototype() {
  * 'def' prototype expression
  * @return
  */
-static std::unique_ptr<FunctionAST> HandleDefinition() {
+std::unique_ptr<FunctionAST> HandleDefinition() {
     getNextToken();  // eat def.
     auto Proto = ParsePrototype();
     if (!Proto) return nullptr;
@@ -219,7 +215,7 @@ static std::unique_ptr<FunctionAST> HandleDefinition() {
  * 'extern' prototype
  * @return nested ParsePrototype function
  */
-static std::unique_ptr<PrototypeAST> HandleExtern() {
+std::unique_ptr<PrototypeAST> HandleExtern() {
     getNextToken();
     return ParsePrototype();
 }
@@ -229,7 +225,7 @@ static std::unique_ptr<PrototypeAST> HandleExtern() {
  * Top level expressions
  * @return null
  */
-static std::unique_ptr<FunctionAST> HandleTopLevelExpression() {
+std::unique_ptr<FunctionAST> HandleTopLevelExpression() {
     if (auto E = ParseExpression()) {
         // Make an anonymous proto.
         auto Proto = std::make_unique<PrototypeAST>("", std::vector<std::string>());
@@ -241,7 +237,7 @@ static std::unique_ptr<FunctionAST> HandleTopLevelExpression() {
 
 // main loop
 
-static void MainLoop() {
+void MainLoop() {
     // Install standard binary operators.
     // 1 is lowest precedence.
     BinopPrecedence['<'] = 10;

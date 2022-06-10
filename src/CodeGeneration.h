@@ -9,6 +9,7 @@
 #include "llvm/IR/Function.h"
 
 #include "AbstractSyntaxTree.h"
+#include "Parser.h"
 
 
 llvm::LLVMContext TheContext;

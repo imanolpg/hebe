@@ -8,7 +8,7 @@
 
 
 llvm::Value *LogErrorV(const char *Str) {
-    //LogError(Str); // Fix multiple imports
+    LogError(Str);
     return nullptr;
 }
 

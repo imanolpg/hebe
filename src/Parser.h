@@ -7,21 +7,39 @@
 #include "Lexer.h"
 
 
-std::unique_ptr<ExprAST> ParseExpression ();
-std::unique_ptr<ExprAST> ParseBinOpRHS (int ExprPrec, std::unique_ptr<ExprAST> LHS);
-
 static int CurTok;
-int getNextToken();
+static int getNextToken();
 
+
+/**
+ * Error logging function. Prints the error message on stderr output
+ * @param Str message to print
+ * @return null pointer
+ */
 std::unique_ptr<ExprAST> LogError(const char *Str);
 
+
+/**
+ * Error logging function for prototypes. Handles the return type. It calls LogError function to log the error
+ * @param Str message to log
+ * @return null pointer
+ */
 std::unique_ptr<PrototypeAST> LogErrorP(const char *Str);
+
+
+/**
+ * Arranges the preference of expressions
+ * @return BinOps
+ */
+std::unique_ptr<ExprAST> ParseExpression();
+
 
 /**
  * Parse numeric literals
  * @return ExprAST numeric value
  */
 std::unique_ptr<ExprAST> ParseNumberExpr();
+
 
 /**
  * Manage open and close parenthesis
@@ -44,7 +62,18 @@ std::unique_ptr<ExprAST> ParseIdentifierExpr();
 std::unique_ptr<ExprAST> ParsePrimary();
 
 
+/**
+ * Check if the current token precedence is too low
+ * @param ExprPrec precedence to compare with
+ * @param LHS left hand side operand
+ * @return LHS if the predecende is lower than the LHS of the argument
+ */
+std::unique_ptr<ExprAST> ParseBinOpRHS (int ExprPrec, std::unique_ptr<ExprAST> LHS);
+
+
+//===----------------------------------------------------------------------===//
 // Binary Expressions
+//===----------------------------------------------------------------------===//
 
 static std::map<char, int> BinopPrecedence; // precendence for the binary operations
 
@@ -71,7 +100,9 @@ int GetTokPrecedence();
 std::unique_ptr<ExprAST> ParseBinOpRHS (int ExprPrec, std::unique_ptr<ExprAST> LHS);
 
 
+//===----------------------------------------------------------------------===//
 // Parsing the rest
+//===----------------------------------------------------------------------===//
 
 /**
  * Parse prototypes
@@ -101,7 +132,9 @@ std::unique_ptr<PrototypeAST> HandleExtern();
 std::unique_ptr<FunctionAST> HandleTopLevelExpression();
 
 
-// main loop
+/**
+ * Main loop
+ */
 void MainLoop();
 
 #endif

@@ -7,7 +7,7 @@
 #include "Parser.h"
 
 
-int getNextToken() {
+static int getNextToken() {
     return CurTok = gettok();
 }
 
@@ -18,6 +18,11 @@ std::unique_ptr<ExprAST> LogError(const char *Str) {
 }
 
 
+/**
+ * Error logging function for
+ * @param Str
+ * @return
+ */
 std::unique_ptr<PrototypeAST> LogErrorP(const char *Str) {
     LogError(Str);
     return nullptr;
@@ -136,12 +141,6 @@ int GetTokPrecedence() {
 }
 
 
-/**
- * Check if the current token precedence is too low
- * @param ExprPrec precedence to compare with
- * @param LHS left hand side operand
- * @return LHS if the predecende is lower than the LHS of the argument
- */
 std::unique_ptr<ExprAST> ParseBinOpRHS (int ExprPrec, std::unique_ptr<ExprAST> LHS) {
     while (true) {
         int TokPrec = GetTokPrecedence();

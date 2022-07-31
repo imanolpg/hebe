@@ -38,7 +38,7 @@ int gettok() {
             LastChar = getchar();
         } while (isdigit(LastChar) || LastChar == '.');
 
-        NumVal = strtod(NumString.c_str(), 0);
+        NumVal = strtod(NumString.c_str(), nullptr);
         return tok_number;
     }
 

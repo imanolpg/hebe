@@ -14,7 +14,7 @@ llvm::Value *LogErrorV(const char *Str) {
 
 
 llvm::Value *NumberExprAST::codegen() {
-    return llvm::ConstantFP::get(TheContext, llvm::APFloat(Val));
+    return llvm::ConstantFP::get(*TheContext, llvm::APFloat(Val));
 }
 
 
@@ -35,14 +35,14 @@ llvm::Value *BinaryExprAST::codegen() {
 
     switch (Op) {
         case '+':
-            return Builder.CreateFAdd(L, R, "addtmp");
+            return Builder->CreateFAdd(L, R, "addtmp");
         case '-':
-            return Builder.CreateFSub(L, R, "subtmp");
+            return Builder->CreateFSub(L, R, "subtmp");
         case '*':
-            return Builder.CreateFMul(L, R, "multmp");
+            return Builder->CreateFMul(L, R, "multmp");
         case '<':
-            L = Builder.CreateFCmpULT(L, R, "cmptmp");
-            return Builder.CreateUIToFP(L, llvm::Type::getDoubleTy(TheContext), "booltmp");
+            L = Builder->CreateFCmpULT(L, R, "cmptmp");
+            return Builder->CreateUIToFP(L, llvm::Type::getDoubleTy(*TheContext), "booltmp");
         default:
             return LogErrorV("invalid binary operator");
     }
@@ -52,25 +52,25 @@ llvm::Value *BinaryExprAST::codegen() {
 llvm::Value *CallExprAST::codegen() {
     llvm::Function *CalleeF = TheModule->getFunction(Callee);
     if (!CalleeF)
-        return LogErrorV("Unknown functino referenced");
+        return LogErrorV("Unknown function referenced");
 
     if (CalleeF->arg_size() != Args.size())
         return LogErrorV("Incorrect # arguments passed");
 
     std::vector<llvm::Value *> ArgsV;
-    for (unsigned i=0, e=Args.size(); i != e; i++) {
+    for (unsigned i=0, e = Args.size(); i != e; i++) {
         ArgsV.push_back(Args[i]->codegen());
         if (!ArgsV.back())
             return nullptr;
     }
 
-    return Builder.CreateCall(CalleeF, ArgsV, "calltmp");
+    return Builder->CreateCall(CalleeF, ArgsV, "calltmp");
 }
 
 
 llvm::Function *PrototypeAST::codegen() {
-    std::vector<llvm::Type *> Doubles(Args.size(), llvm::Type::getDoubleTy(TheContext));
-    llvm::FunctionType *FT = llvm::FunctionType::get(llvm::Type::getDoubleTy(TheContext), Doubles,
+    std::vector<llvm::Type *> Doubles(Args.size(), llvm::Type::getDoubleTy(*TheContext));
+    llvm::FunctionType *FT = llvm::FunctionType::get(llvm::Type::getDoubleTy(*TheContext), Doubles,
         false);
     llvm::Function *F = llvm::Function::Create(FT, llvm::Function::ExternalLinkage, Name,
             TheModule.get());
@@ -95,15 +95,15 @@ llvm::Function *FunctionAST::codegen() {
     if (!TheFunction->empty())
         return (llvm::Function *) LogErrorV("Function cannot be redefined.");
 
-    llvm::BasicBlock *BB = llvm::BasicBlock::Create(TheContext, "entry", TheFunction);
-    Builder.SetInsertPoint(BB);
+    llvm::BasicBlock *BB = llvm::BasicBlock::Create(*TheContext, "entry", TheFunction);
+    Builder->SetInsertPoint(BB);
 
     NamedValues.clear();
     for (auto &Arg : TheFunction->args())
         NamedValues[std::string(Arg.getName())] = &Arg;
 
     if (llvm::Value *RetVal = Body->codegen()) {
-        Builder.CreateRet(RetVal);
+        Builder->CreateRet(RetVal);
         llvm::verifyFunction(*TheFunction);
         return TheFunction;
     }

@@ -12,12 +12,29 @@
 #include "Parser.h"
 
 
-llvm::LLVMContext TheContext;
-llvm::IRBuilder<> Builder(TheContext);
-std::unique_ptr<llvm::Module> TheModule;
-std::map<std::string, llvm::Value *> NamedValues;
+static std::unique_ptr<llvm::LLVMContext> TheContext;
+static std::unique_ptr<llvm::IRBuilder<>> Builder;
+static std::unique_ptr<llvm::Module> TheModule;
+static std::map<std::string, llvm::Value *> NamedValues;
 
+/**
+ * Error loggin function
+ * @param Str message
+ * @return null pointer
+ */
 llvm::Value *LogErrorV(const char *Str);
 
+
+llvm::Value *NumberExprAST();
+
+llvm::Value *VariableExprAST();
+
+llvm::Value *BinaryExprAST();
+
+llvm::Value *CallExprAST();
+
+llvm::Function *PrototypeAST();
+
+llvm::Function *FunctionAST();
 
 #endif

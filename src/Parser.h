@@ -8,7 +8,7 @@
 
 
 static int CurTok;
-static int getNextToken();
+int getNextToken();
 
 
 /**
@@ -101,7 +101,7 @@ std::unique_ptr<ExprAST> ParseBinOpRHS (int ExprPrec, std::unique_ptr<ExprAST> L
 
 
 //===----------------------------------------------------------------------===//
-// Parsing the rest
+// Functions
 //===----------------------------------------------------------------------===//
 
 /**
@@ -110,26 +110,25 @@ std::unique_ptr<ExprAST> ParseBinOpRHS (int ExprPrec, std::unique_ptr<ExprAST> L
  */
 std::unique_ptr<PrototypeAST> ParsePrototype();
 
-
 /**
- * 'def' prototype expression
+ * Parses function definitin
  * @return
  */
-std::unique_ptr<FunctionAST> HandleDefinition();
+std::unique_ptr<FunctionAST> ParseDefinition();
 
 
 /**
- * 'extern' prototype
- * @return nested ParsePrototype function
+ * Parse top level expresions
+ * @return
  */
-std::unique_ptr<PrototypeAST> HandleExtern();
+std::unique_ptr<FunctionAST> ParseTopLevelExpr();
 
 
 /**
- * Top level expressions
- * @return null
+ * Used when 'extern' word is located
+ * @return
  */
-std::unique_ptr<FunctionAST> HandleTopLevelExpression();
+std::unique_ptr<PrototypeAST> ParseExtern();
 
 
 /**

@@ -7,11 +7,15 @@
 #include "Parser.h"
 
 
-static int getNextToken() {
+int getNextToken() {
     return CurTok = gettok();
 }
 
-
+/**
+ * Generic error loggin function
+ * @param Str log message
+ * @return
+ */
 std::unique_ptr<ExprAST> LogError(const char *Str) {
     fprintf(stderr, "LogError: %s\n", Str);
     return nullptr;
@@ -20,7 +24,7 @@ std::unique_ptr<ExprAST> LogError(const char *Str) {
 
 /**
  * Error logging function for
- * @param Str
+ * @param Str log message
  * @return
  */
 std::unique_ptr<PrototypeAST> LogErrorP(const char *Str) {
@@ -69,6 +73,7 @@ std::unique_ptr<ExprAST> ParseIdentifierExpr() {
 
     getNextToken();
     std::vector<std::unique_ptr<ExprAST>> Args;
+
     if (CurTok != ')') {
         while (true) {
             if (auto Arg = ParseExpression())
@@ -196,46 +201,45 @@ std::unique_ptr<PrototypeAST> ParsePrototype() {
 
 
 /**
- * 'def' prototype expression
- * @return
+ * Parses function definitions
+ * @return FunctionAST object
  */
-std::unique_ptr<FunctionAST> HandleDefinition() {
-    getNextToken();  // eat def.
+std::unique_ptr<FunctionAST> ParseDefinition() {
+    getNextToken(); // eat def.
     auto Proto = ParsePrototype();
-    if (!Proto) return nullptr;
+    if (!Proto)
+        return nullptr;
 
     if (auto E = ParseExpression())
         return std::make_unique<FunctionAST>(std::move(Proto), std::move(E));
     return nullptr;
 }
 
-
 /**
- * 'extern' prototype
- * @return nested ParsePrototype function
+ * Parses top level expresions
+ * @return FunctionAST object
  */
-std::unique_ptr<PrototypeAST> HandleExtern() {
-    getNextToken();
-    return ParsePrototype();
-}
-
-
-/**
- * Top level expressions
- * @return null
- */
-std::unique_ptr<FunctionAST> HandleTopLevelExpression() {
+std::unique_ptr<FunctionAST> ParseTopLevelExpr() {
     if (auto E = ParseExpression()) {
         // Make an anonymous proto.
-        auto Proto = std::make_unique<PrototypeAST>("", std::vector<std::string>());
+        auto Proto = std::make_unique<PrototypeAST>("__anon_expr",
+                                                    std::vector<std::string>());
         return std::make_unique<FunctionAST>(std::move(Proto), std::move(E));
     }
     return nullptr;
 }
 
+/**
+ * Parses external functions
+ * @return FunctionAST object
+ */
+std::unique_ptr<PrototypeAST> ParseExtern() {
+    getNextToken(); // eat extern.
+    return ParsePrototype();
+}
+
 
 // main loop
-
 void MainLoop() {
     // Install standard binary operators.
     // 1 is lowest precedence.
@@ -257,13 +261,13 @@ void MainLoop() {
                 getNextToken();
                 break;
             case tok_def:
-                HandleDefinition();
+                ParseDefinition();
                 break;
             case tok_extern:
-                HandleExtern();
+                ParseExtern();
                 break;
             default:
-                HandleTopLevelExpression();
+                ParseTopLevelExpr();
                 break;
         }
     }

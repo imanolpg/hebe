@@ -18,7 +18,7 @@ The simples unfinished programming languaje you can find out there
 ## About
 This is the development of a 🔮 Kaleidoscope like languaje. It is the result of following the llvm [tutorial](https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/) on how to create a frontend programming languaje. This project is based on the [**🐉 LLVM**](https://llvm.org) library commonly used for building compilers. Up to now the _parser_, _lexer_, _AST_, the _code generation functions_ and the _JIT drivers_ have been implemented.
 
-Why **unfinished**? It is an really big work to maintain and continue adding new features to this project having limited time.
+Why **discontinued**? It is an really big work to maintain and continue adding new features to this project having limited time.
 
 Feel free to PR this repo an add more stuff 🚀🚀 (only lit things accepted 😉)
 

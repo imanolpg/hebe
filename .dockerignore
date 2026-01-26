@@ -1,0 +1,14 @@
+.git
+.gitignore
+.DS_Store
+build
+generated
+CMakeCache.txt
+CMakeFiles
+cmake_install.cmake
+*.swp
+*.swo
+*.o
+*.obj
+*.tmp
+*.log

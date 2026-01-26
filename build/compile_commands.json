@@ -1,0 +1,32 @@
+[
+{
+  "directory": "/workspace/build",
+  "command": "/usr/bin/clang++ -I/opt/homebrew/Cellar/llvm/14.0.6_1/include -std=c++14 -stdlib=libc++   -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -L/opt/homebrew/Cellar/llvm/14.0.6_1/lib -Wl,-search_paths_first -Wl,-headerpad_max_install_names -lLLVM-14 -g -o CMakeFiles/hebe.dir/main.cpp.o -c /workspace/main.cpp",
+  "file": "/workspace/main.cpp"
+},
+{
+  "directory": "/workspace/build",
+  "command": "/usr/bin/clang++ -I/opt/homebrew/Cellar/llvm/14.0.6_1/include -std=c++14 -stdlib=libc++   -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -L/opt/homebrew/Cellar/llvm/14.0.6_1/lib -Wl,-search_paths_first -Wl,-headerpad_max_install_names -lLLVM-14 -g -o CMakeFiles/hebe.dir/src/Lexer.cc.o -c /workspace/src/Lexer.cc",
+  "file": "/workspace/src/Lexer.cc"
+},
+{
+  "directory": "/workspace/build",
+  "command": "/usr/bin/clang++ -I/opt/homebrew/Cellar/llvm/14.0.6_1/include -std=c++14 -stdlib=libc++   -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -L/opt/homebrew/Cellar/llvm/14.0.6_1/lib -Wl,-search_paths_first -Wl,-headerpad_max_install_names -lLLVM-14 -g -o CMakeFiles/hebe.dir/src/AbstractSyntaxTree.cc.o -c /workspace/src/AbstractSyntaxTree.cc",
+  "file": "/workspace/src/AbstractSyntaxTree.cc"
+},
+{
+  "directory": "/workspace/build",
+  "command": "/usr/bin/clang++ -I/opt/homebrew/Cellar/llvm/14.0.6_1/include -std=c++14 -stdlib=libc++   -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -L/opt/homebrew/Cellar/llvm/14.0.6_1/lib -Wl,-search_paths_first -Wl,-headerpad_max_install_names -lLLVM-14 -g -o CMakeFiles/hebe.dir/src/Parser.cc.o -c /workspace/src/Parser.cc",
+  "file": "/workspace/src/Parser.cc"
+},
+{
+  "directory": "/workspace/build",
+  "command": "/usr/bin/clang++ -I/opt/homebrew/Cellar/llvm/14.0.6_1/include -std=c++14 -stdlib=libc++   -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -L/opt/homebrew/Cellar/llvm/14.0.6_1/lib -Wl,-search_paths_first -Wl,-headerpad_max_install_names -lLLVM-14 -g -o CMakeFiles/hebe.dir/src/CodeGeneration.cc.o -c /workspace/src/CodeGeneration.cc",
+  "file": "/workspace/src/CodeGeneration.cc"
+},
+{
+  "directory": "/workspace/build",
+  "command": "/usr/bin/clang++ -I/opt/homebrew/Cellar/llvm/14.0.6_1/include -std=c++14 -stdlib=libc++   -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -L/opt/homebrew/Cellar/llvm/14.0.6_1/lib -Wl,-search_paths_first -Wl,-headerpad_max_install_names -lLLVM-14 -g -o CMakeFiles/hebe.dir/src/JITDriver.cc.o -c /workspace/src/JITDriver.cc",
+  "file": "/workspace/src/JITDriver.cc"
+}
+]

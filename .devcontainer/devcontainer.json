@@ -1,0 +1,36 @@
+{
+    "name": "Hebe Dev",
+    "build": {
+        "dockerfile": "../Dockerfile",
+        "context": "..",
+        "args": {
+            "CMAKE_PKG": "${localEnv:CMAKE_PKG}",
+            "LLVM_PKG": "${localEnv:LLVM_PKG}"
+        }
+    },
+    "workspaceFolder": "/workspace",
+    "mounts": [
+        "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.cpptools",
+                "llvm-vs-code-extensions.vscode-clangd",
+                "ms-vscode.cmake-tools",
+                "dan-c-underwood.arm",
+                "jeff-hykin.better-cpp-syntax",
+                "luniclynx.bison",
+                "streetsidesoftware.code-spell-checker",
+                "cschlosser.doxdocgen",
+                "trond-snekvik.gnu-mapfiles",
+                "ms-vscode.hexeditor",
+                "Gruntfuggly.todo-tree"
+            ],
+            "settings": {
+                "cmake.configureOnOpen": true
+            }
+        }
+    },
+    "remoteUser": "root"
+}

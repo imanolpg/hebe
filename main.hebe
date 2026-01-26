@@ -1,0 +1,19 @@
+1.0+1.0
+
+2.9 + 3.0
+
+save 42.0 in x
+
+2.9 + 3.0 + 3.1
+
+save 42.0 + 42.0 in y
+
+create test_procedure
+    save 42.0 in hola
+    2.9 + 3.0
+done
+
+save -9.0 in u
+test_procedure
+
+save 0.0 in ret

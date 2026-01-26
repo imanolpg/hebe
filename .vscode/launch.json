@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${command:cmake.launchTargetPath}",
-            "args": ["main.ev"],
+            "args": ["main.hebe"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

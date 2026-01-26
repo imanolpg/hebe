@@ -31,5 +31,22 @@
 *.out
 *.app
 
-# cmake-build-debug
-./cmake-build-debug
+# VSCode configuration
+.vscode
+
+# Output files
+build
+cmake-build-*
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+
+# Executables
+*.exe
+*.out
+
+# OSX stuff
+*.DS_Store

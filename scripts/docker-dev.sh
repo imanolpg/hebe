@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Determine repository root relative to this script.
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-IMAGE_NAME="${IMAGE_NAME:-eventer-dev}"
+IMAGE_NAME="${IMAGE_NAME:-hebe-dev}"
 
 BUILD_ARGS=()
 if [[ -n "${DOCKER_BUILD_ARGS:-}" ]]; then

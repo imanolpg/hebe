@@ -19,6 +19,8 @@ int main(int argc, char** argv) {
     }
   }
 
+  int exitCode;
+
   // Call yyparse() and check its return value for errors
   if (yyparse() == 0) {
     Compiler compiler = Compiler(root);
@@ -26,10 +28,11 @@ int main(int argc, char** argv) {
     compiler.printNodeTree();
     compiler.printLLVMIR();
     compiler.exportIRToFile("output_code.ll");
+    exitCode = compiler.runJIT();
   } else {
     logsys::get()->error("Parsing error occurred!");
     return 1;
   }
 
-  return 0;
+  return exitCode;
 }

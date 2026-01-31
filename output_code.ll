@@ -7,7 +7,7 @@ source_filename = "MainModule"
 @u = global float 0.000000e+00
 @ret = global float 0.000000e+00
 
-define float @main() {
+define float @run() {
 entry:
   %forDebug = alloca float, align 4
   store float 2.000000e+00, float* %forDebug, align 4

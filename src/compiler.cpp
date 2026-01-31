@@ -2,7 +2,13 @@
 
 #include <llvm-14/llvm/IR/BasicBlock.h>
 #include <llvm-14/llvm/IR/DerivedTypes.h>
+#include <llvm-14/llvm/IR/LLVMContext.h>
+#include <llvm/ExecutionEngine/Orc/ExecutionUtils.h>
+#include <llvm/ExecutionEngine/Orc/LLJIT.h>
+#include <llvm/ExecutionEngine/Orc/ThreadSafeModule.h>
+#include <llvm/Support/Errc.h>
 #include <llvm/Support/FileSystem.h>
+#include <llvm/Support/TargetSelect.h>
 #include <stdexcept>
 
 #include "ast/ast.h"
@@ -159,7 +165,7 @@ llvm::BasicBlock* Compiler::createBasicBlock(const std::string& name,
   }
 
   // Create the basic block.
-  llvm::BasicBlock* block = llvm::BasicBlock::Create(this->context, name, parentFunctionPtr);
+  llvm::BasicBlock* block = llvm::BasicBlock::Create(*this->context, name, parentFunctionPtr);
 
   // Store the basic block pointer.
   this->basicBlockTable[name] = block;
@@ -179,9 +185,9 @@ llvm::GlobalVariable* Compiler::createGlobalVariable(const std::string& name) {
 
   // Create the global variable
   llvm::GlobalVariable* globalVarPtr = new llvm::GlobalVariable(
-      *this->module, llvm::Type::getFloatTy(this->context), false,
+      *this->module, llvm::Type::getFloatTy(*this->context), false,
       llvm::GlobalValue::ExternalLinkage,
-      llvm::ConstantFP::get(llvm::Type::getFloatTy(this->context), 0.0), name);
+      llvm::ConstantFP::get(llvm::Type::getFloatTy(*this->context), 0.0), name);
 
   // Save the global variable into the global variable table.
   this->globalVariableTable[name] = globalVarPtr;
@@ -210,7 +216,7 @@ llvm::GlobalVariable* Compiler::getOrCreateGlobalVariable(const std::string& nam
 
 llvm::Value* Compiler::codegenNumber(ASTNode* inputNode) {
   NumberNode* node = static_cast<NumberNode*>(inputNode);
-  return llvm::ConstantFP::get(llvm::Type::getFloatTy(this->context), node->value);
+  return llvm::ConstantFP::get(llvm::Type::getFloatTy(*this->context), node->value);
 }
 
 llvm::Value* Compiler::codegenBinaryOp(ASTNode* inputNode) {
@@ -257,7 +263,7 @@ llvm::Value* Compiler::codegenProcedureBody(ASTNode* inputNode) {
   // FIXME: this has to be removed. I only put this for debugging because the IR optimization would
   // remove all expressions that had a result without being stored.
   llvm::AllocaInst* lastAlloca =
-      this->builder->CreateAlloca(llvm::Type::getFloatTy(this->context), nullptr, "forDebug");
+      this->builder->CreateAlloca(llvm::Type::getFloatTy(*this->context), nullptr, "forDebug");
 
   llvm::Value* expr = nullptr;
 
@@ -278,7 +284,7 @@ llvm::Value* Compiler::codegenProcedure(ASTNode* inputNode) {
   ProcedureNode* node = static_cast<ProcedureNode*>(inputNode);
 
   // Get the function type.
-  llvm::FunctionType* fnTy = this->createFunctionType(llvm::Type::getVoidTy(this->context));
+  llvm::FunctionType* fnTy = this->createFunctionType(llvm::Type::getVoidTy(*this->context));
 
   // Create the function.
   llvm::Function* fnPtr = this->createFunction(node->name, fnTy);
@@ -347,18 +353,18 @@ void Compiler::generateCode() {
   logsys::get()->info("Executing generateCode");
 
   // Create main function where the code will run.
-  llvm::FunctionType* mainFuncTy = this->createFunctionType(llvm::Type::getFloatTy(this->context));
-  this->getOrCreateFunction("main", mainFuncTy);
+  llvm::FunctionType* mainFuncTy = this->createFunctionType(llvm::Type::getFloatTy(*this->context));
+  this->getOrCreateFunction("run", mainFuncTy);
 
   // Create the basic block that will be executed on program start.
-  llvm::BasicBlock* entry = this->createBasicBlock("entry", "main");
+  llvm::BasicBlock* entry = this->createBasicBlock("entry", "run");
   this->builder->SetInsertPoint(entry);
 
   // Create variable last alloca to avoid lose of instructions after optimization passes.
   // FIXME: this has to be removed. I only put this for debugging because the IR optimization would
   // remove all expressions that had a result without being stored.
   llvm::AllocaInst* lastAlloca =
-      this->builder->CreateAlloca(llvm::Type::getFloatTy(this->context), nullptr, "forDebug");
+      this->builder->CreateAlloca(llvm::Type::getFloatTy(*this->context), nullptr, "forDebug");
 
   llvm::Value* expr = nullptr;
 
@@ -375,10 +381,55 @@ void Compiler::generateCode() {
   if (expr) {
     llvm::Constant* retPtr = this->getOrCreateGlobalVariable("ret");
     llvm::LoadInst* retValue =
-        this->builder->CreateLoad(llvm::Type::getFloatTy(this->context), retPtr);
+        this->builder->CreateLoad(llvm::Type::getFloatTy(*this->context), retPtr);
     this->builder->CreateRet(retValue);
   } else {
     logsys::get()->error("Failed to generate expression!");
-    this->builder->CreateRet(llvm::ConstantInt::get(llvm::Type::getFloatTy(this->context), 1.0));
+    this->builder->CreateRet(llvm::ConstantInt::get(llvm::Type::getFloatTy(*this->context), 1.0));
   }
+}
+
+int Compiler::runJIT() {
+  // Init LLVM JIT target.
+  llvm::InitializeNativeTarget();
+  llvm::InitializeNativeTargetAsmPrinter();
+
+  // Create the JIT.
+  auto jitExpected = llvm::orc::LLJITBuilder().create();
+  if (!jitExpected) {
+    llvm::errs() << "Failed to create LLJIT\n";
+    return 1;
+  }
+  auto J = std::move(*jitExpected);
+
+  // Allow JITed code to resolve symbols from the current process.
+  auto genExpected = llvm::orc::DynamicLibrarySearchGenerator::GetForCurrentProcess(
+      J->getDataLayout().getGlobalPrefix());
+  if (!genExpected) {
+    llvm::errs() << "Failed to create symbol generator\n";
+    return 1;
+  }
+  J->getMainJITDylib().addGenerator(std::move(*genExpected));
+
+  // Put your Module into a ThreadSafeModule and add it to the JIT.
+  llvm::orc::ThreadSafeModule TSM(std::move(this->module), std::move(this->context));
+  if (auto err = J->addIRModule(std::move(TSM))) {
+    llvm::errs() << "Failed to add IR module to JIT\n";
+    return 1;
+  }
+
+  // Look up the entry function in the JIT "run".
+  auto symExpected = J->lookup("run");
+  if (!symExpected) {
+    llvm::errs() << "Could not find function 'run' in JIT\n";
+    return 1;
+  }
+
+  // Call it like a normal C function.
+  using RunFn = float (*)();
+  auto addr = symExpected->getAddress();
+  auto runFn = reinterpret_cast<RunFn>(addr);
+  float result = runFn();
+
+  return static_cast<int>(result);
 }

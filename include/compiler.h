@@ -17,8 +17,9 @@ public:
   // Constructor and destructor
 
   Compiler(ASTNode* root) {
-    this->builder = std::make_unique<llvm::IRBuilder<>>(context);
-    this->module = std::make_unique<llvm::Module>("MainModule", context);
+    this->context = std::make_unique<llvm::LLVMContext>();
+    this->builder = std::make_unique<llvm::IRBuilder<>>(*context);
+    this->module = std::make_unique<llvm::Module>("MainModule", *context);
     this->rootNode = root;
   };
 
@@ -32,8 +33,10 @@ public:
 
   void generateCode();
 
+  int runJIT();
+
 private:
-  llvm::LLVMContext context;
+  std::unique_ptr<llvm::LLVMContext> context;
   std::unique_ptr<llvm::IRBuilder<>> builder;
   std::unique_ptr<llvm::Module> module;
 

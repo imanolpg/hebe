@@ -55,9 +55,9 @@
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "BISON_EXECUTABLE": "/opt/homebrew/opt/bison/bin/bison",
-        "FLEX_EXECUTABLE": "/opt/homebrew/opt/flex/bin/flex",
-        "LLVM_CONFIG_EXECUTABLE": "/opt/homebrew/opt/llvm/bin/llvm-config",
+        "BISON_EXECUTABLE": "$env{HOME}/Desktop/bison3/bin/bison",
+        "FLEX_EXECUTABLE": "$env{HOME}/Desktop/flex/bin/flex",
+        "LLVM_CONFIG_EXECUTABLE": "/opt/homebrew/opt/llvm@14/bin/llvm-config",
         "CMAKE_OSX_ARCHITECTURES": "arm64"
       },
       "condition": {
@@ -72,9 +72,9 @@
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "BISON_EXECUTABLE": "/opt/homebrew/opt/bison/bin/bison",
-        "FLEX_EXECUTABLE": "/opt/homebrew/opt/flex/bin/flex",
-        "LLVM_CONFIG_EXECUTABLE": "/opt/homebrew/opt/llvm/bin/llvm-config",
+        "BISON_EXECUTABLE": "$env{HOME}/Desktop/bison3/bin/bison",
+        "FLEX_EXECUTABLE": "$env{HOME}/Desktop/flex/bin/flex",
+        "LLVM_CONFIG_EXECUTABLE": "/opt/homebrew/opt/llvm@14/bin/llvm-config",
         "CMAKE_OSX_ARCHITECTURES": "arm64",
         "HEBE_ENABLE_LTO": "ON",
         "HEBE_ENABLE_STRIP": "ON"

@@ -8,6 +8,13 @@ extern int yyparse(); // Declaration of the parsing function.
 extern ASTNode* root; // Defined in grammar.
 extern FILE* yyin;    // Defined in grammar.
 
+constexpr bool isDebug =
+#ifdef HEBE_DEBUG
+    true;
+#else
+    false;
+#endif
+
 int main(int argc, char** argv) {
 
   // Read code file.
@@ -25,9 +32,12 @@ int main(int argc, char** argv) {
   if (yyparse() == 0) {
     Compiler compiler = Compiler(root);
     compiler.generateCode();
-    compiler.printNodeTree();
-    compiler.printLLVMIR();
-    compiler.exportIRToFile("output_code.ll");
+    if (isDebug)
+      compiler.printNodeTree();
+    if (isDebug)
+      compiler.printLLVMIR();
+    if (isDebug)
+      compiler.exportIRToFile("output_code.ll");
     exitCode = compiler.runJIT();
   } else {
     logsys::get()->error("Parsing error occurred!");

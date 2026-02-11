@@ -31,9 +31,42 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # ===============================================
 # Spdlog library
+# Extract platform and architecture from CMAKE_BINARY_DIR path
+# Example: /workspace/build/linux-arm64-debug -> linux-arm64
+string(REGEX MATCH "build/([^/]+)" _ ${CMAKE_BINARY_DIR})
+set(PRESET_NAME ${CMAKE_MATCH_1})
 
-# Put spdlog in a common location instead of per-build-directory
-set(FETCHCONTENT_BASE_DIR "${CMAKE_SOURCE_DIR}/.cache/fetchcontent" CACHE PATH "FetchContent cache directory")
+if(PRESET_NAME MATCHES "^(linux|macos|windows)-(arm64|x64)")
+  set(PLATFORM_ARCH "${CMAKE_MATCH_1}-${CMAKE_MATCH_2}")
+else()
+  # Fallback: auto-detect platform and architecture
+  if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(PLATFORM "linux")
+  elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(PLATFORM "macos")
+  elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(PLATFORM "windows")
+  else()
+    set(PLATFORM "unknown")
+  endif()
+  
+  if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64|ARM64")
+    set(ARCH "arm64")
+  elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
+    set(ARCH "x64")
+  else()
+    set(ARCH "${CMAKE_SYSTEM_PROCESSOR}")
+  endif()
+  
+  set(PLATFORM_ARCH "${PLATFORM}-${ARCH}")
+endif()
+
+# Put FetchContent dependencies in platform-specific cache
+set(FETCHCONTENT_BASE_DIR 
+    "${CMAKE_SOURCE_DIR}/.cache/fetchcontent/${PLATFORM_ARCH}" 
+    CACHE PATH "FetchContent cache directory")
+
+message(STATUS "FetchContent cache: ${FETCHCONTENT_BASE_DIR}")
 
 # Load Spdlog library for logging
 include(FetchContent)

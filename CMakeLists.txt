@@ -10,6 +10,19 @@ project(Hebe VERSION 0.0.1)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+# Set default build type to Release
+# Ensure that a build type exists and is: Debug or Release
+if(NOT CMAKE_CONFIGURATION_TYPES)
+  set(allowed_build_types Debug Release)
+  if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+  endif()
+  list(FIND allowed_build_types "${CMAKE_BUILD_TYPE}" _idx)
+  if(_idx EQUAL -1)
+    message(FATAL_ERROR "Invalid CMAKE_BUILD_TYPE='${CMAKE_BUILD_TYPE}'. Use Debug or Release.")
+  endif()
+endif()
+
 # ===============================================
 # Clangd linter config
 
@@ -18,6 +31,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # ===============================================
 # Spdlog library
+
+# Put spdlog in a common location instead of per-build-directory
+set(FETCHCONTENT_BASE_DIR "${CMAKE_SOURCE_DIR}/.cache/fetchcontent" CACHE PATH "FetchContent cache directory")
 
 # Load Spdlog library for logging
 include(FetchContent)
@@ -32,10 +48,32 @@ FetchContent_MakeAvailable(spdlog)
 # ===============================================
 # Bison and Flex
 
-# Specify the location of the Bison executable when using Homebrew on macOS.
-# When the variable is already set (e.g. inside Docker) we keep the existing value.
-if(NOT DEFINED BISON_EXECUTABLE AND EXISTS "/usr/bin/bison")
-    set(BISON_EXECUTABLE "/usr/bin/bison")
+# Accept -DBISON_EXECUTABLE=... / -DFLEX_EXECUTABLE=... from the command line.
+# If not provided, keep whatever is already in cache. If still empty, set defaults.
+set(BISON_EXECUTABLE "" CACHE FILEPATH "Path to bison executable")
+set(FLEX_EXECUTABLE  "" CACHE FILEPATH "Path to flex executable")
+
+
+if(NOT BISON_EXECUTABLE AND EXISTS "/usr/bin/bison")
+    set(BISON_EXECUTABLE "/usr/bin/bison" CACHE FILEPATH "Path to bison executable" FORCE)
+endif()
+
+if(NOT FLEX_EXECUTABLE AND EXISTS "/usr/bin/flex")
+    set(FLEX_EXECUTABLE "/usr/bin/flex" CACHE FILEPATH "Path to flex executable" FORCE)
+endif()
+
+# Throw an error if BISON_EXECUTABLE does not exist
+if(NOT BISON_EXECUTABLE)
+  message(FATAL_ERROR
+    "bison not found.\n"
+    "Pass -DBISON_EXECUTABLE=/path/to/bison or install bison >= 3.0.0")
+endif()
+
+# Throw an error if FLEX_EXECUTABLE does not exist
+if(NOT FLEX_EXECUTABLE)
+  message(FATAL_ERROR
+    "flex not found.\n"
+    "Pass -DFLEX_EXECUTABLE=/path/to/flex or install flex.")
 endif()
 
 # Now, find Bison using the specified executable
@@ -45,17 +83,31 @@ find_package(FLEX REQUIRED)
 # ===============================================
 # LLVM
 
+# Accept: -DLLVM_CONFIG_EXECUTABLE=/path/to/llvm-config
+set(LLVM_CONFIG_EXECUTABLE "" CACHE FILEPATH "Path to llvm-config executable")
+
+if(NOT LLVM_CONFIG_EXECUTABLE AND EXISTS "/usr/bin/llvm-config")
+    set(LLVM_CONFIG_EXECUTABLE "/usr/bin/llvm-config" CACHE FILEPATH "Path to llvm-config executable" FORCE)
+endif()
+
+# Throw an error if LLVM_CONFIG_EXECUTABLE does not exist
+if(NOT LLVM_CONFIG_EXECUTABLE)
+  message(FATAL_ERROR
+    "llvm-config not found.\n"
+    "Pass -DLLVM_CONFIG_EXECUTABLE=/path/to/llvm-config or install LLVM.")
+endif()
+
 # LLVM flags
-execute_process(COMMAND llvm-config --cxxflags
+execute_process(COMMAND ${LLVM_CONFIG_EXECUTABLE} --cxxflags
     OUTPUT_VARIABLE LLVM_CXXFLAGS
     OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND llvm-config --ldflags
+execute_process(COMMAND ${LLVM_CONFIG_EXECUTABLE} --ldflags
     OUTPUT_VARIABLE LLVM_LDFLAGS
     OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND llvm-config --libs core
+execute_process(COMMAND ${LLVM_CONFIG_EXECUTABLE} --libs core
     OUTPUT_VARIABLE LLVM_LIBS
     OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND llvm-config --system-libs
+execute_process(COMMAND ${LLVM_CONFIG_EXECUTABLE} --system-libs
     OUTPUT_VARIABLE LLVM_SYSLIBS
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
@@ -119,6 +171,11 @@ target_compile_options(main PRIVATE -fexceptions)
 target_link_options(main PRIVATE ${LLVM_LDFLAGS})
 target_link_libraries(main PRIVATE ${LLVM_LIBS} ${LLVM_SYSLIBS} spdlog::spdlog)
 
+target_compile_definitions(main PRIVATE
+    $<$<CONFIG:Debug>:HEBE_DEBUG>
+    $<$<CONFIG:Release>:HEBE_RELEASE>
+)
+
 # Specify include directories for this target
 target_include_directories(main PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -127,44 +184,11 @@ target_include_directories(main PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/generated
 )
 
-# -----------------------------------------------------------
-# Custom target: clean_cache
-# This target cleans cache and build files.
-add_custom_target(clean_cache
-  COMMAND ${CMAKE_COMMAND} -E rm -f  ${CMAKE_BINARY_DIR}/CMakeCache.txt
-  COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_BINARY_DIR}/CMakeFiles
-  COMMAND ${CMAKE_COMMAND} -E rm -f  ${CMAKE_BINARY_DIR}/build.ninja
-  COMMAND ${CMAKE_COMMAND} -E rm -f  ${CMAKE_BINARY_DIR}/rules.ninja
-  COMMENT "Delete cache/build files"
-)
+# Production/release options.
+option(HEBE_ENABLE_LTO "Enable LTO/IPO in Release builds" ON)
+option(HEBE_ENABLE_STRIP "Strip symbols in Release builds" ON)
 
-# -----------------------------------------------------------
-# Custom target: clean_build_directory
-# This target removes the build directory.
-add_custom_target(clean_build_directory
-  COMMAND ${CMAKE_COMMAND} -E rm -rf  ${CMAKE_BINARY_DIR}/build
-  COMMENT "Delete build directory"
-)
-
-# -----------------------------------------------------------
-# Custom target: run
-# This target depends on the main executable and runs it.
-add_custom_target(run
-    COMMAND $<TARGET_FILE:main>
-    DEPENDS main
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    COMMENT "Running the main executable"
-)
-
-# -----------------------------------------------------------
-# Custom target: run_generated
-# This target runs an additional command (e.g. executing LLVM IR with lli).
-find_program(LLI_EXECUTABLE lli REQUIRED)
-
-add_custom_target(run_generated
-    COMMAND $<TARGET_FILE:main>
-    COMMAND ${LLI_EXECUTABLE} output_code.ll
-    DEPENDS main
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    COMMENT "Run compiler then execute output_code.ll with lli"
-)
+set_property(TARGET main PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE ${HEBE_ENABLE_LTO})
+if(HEBE_ENABLE_STRIP)
+  target_link_options(main PRIVATE $<$<CONFIG:Release>:-s>)
+endif()

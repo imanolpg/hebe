@@ -64,7 +64,7 @@
   },
   "C_Cpp.intelliSenseEngine": "disabled",
   "clangd.arguments": [
-    "--compile-commands-dir=/workspace/build",
+    "--compile-commands-dir=${command:cmake.buildDirectory}",
     "--background-index",
     "--clang-tidy",
   ],
@@ -98,5 +98,8 @@
       "args": ["--noprofile", "--norc"]
     }
   },
-  "terminal.integrated.defaultProfile.linux": "bash-no-rc"
+  "terminal.integrated.defaultProfile.linux": "bash-no-rc",
+  // For finding CMake presets
+  "cmake.useCMakePresets": "always",
+  "cmake.buildDirectory": "${workspaceFolder}/build/${presetName}"
 }

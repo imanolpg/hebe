@@ -155,9 +155,6 @@ separate_arguments(LLVM_LDFLAGS  NATIVE_COMMAND "${LLVM_LDFLAGS}")
 separate_arguments(LLVM_LIBS     NATIVE_COMMAND "${LLVM_LIBS}")
 separate_arguments(LLVM_SYSLIBS  NATIVE_COMMAND "${LLVM_SYSLIBS}")
 
-# Remove LLVM's -std=c++14
-list(FILTER LLVM_CXXFLAGS EXCLUDE REGEX "^-std=")
-
 # Create the directory for generated files if it does not exist
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/generated)
 

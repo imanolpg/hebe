@@ -57,7 +57,10 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "BISON_EXECUTABLE": "$env{HOME}/Desktop/bison3/bin/bison",
         "FLEX_EXECUTABLE": "$env{HOME}/Desktop/flex/bin/flex",
-        "LLVM_CONFIG_EXECUTABLE": "/opt/homebrew/opt/llvm@14/bin/llvm-config",
+        "LLVM_CONFIG_EXECUTABLE": "/opt/homebrew/opt/llvm/bin/llvm-config",
+        "CMAKE_C_COMPILER": "/opt/homebrew/opt/llvm/bin/clang",
+        "CMAKE_CXX_COMPILER": "/opt/homebrew/opt/llvm/bin/clang++",
+        "CMAKE_EXE_LINKER_FLAGS": "-L/opt/homebrew/opt/llvm/lib/c++ -Wl,-rpath,/opt/homebrew/opt/llvm/lib/c++",
         "CMAKE_OSX_ARCHITECTURES": "arm64"
       },
       "condition": {
@@ -74,7 +77,11 @@
         "CMAKE_BUILD_TYPE": "Release",
         "BISON_EXECUTABLE": "$env{HOME}/Desktop/bison3/bin/bison",
         "FLEX_EXECUTABLE": "$env{HOME}/Desktop/flex/bin/flex",
-        "LLVM_CONFIG_EXECUTABLE": "/opt/homebrew/opt/llvm@14/bin/llvm-config",
+        "LLVM_CONFIG_EXECUTABLE": "/opt/homebrew/opt/llvm/bin/llvm-config",
+        "CMAKE_C_COMPILER": "/opt/homebrew/opt/llvm/bin/clang",
+        "CMAKE_CXX_COMPILER": "/opt/homebrew/opt/llvm/bin/clang++",
+        "CMAKE_CXX_FLAGS": "-stdlib=libc++",
+        "CMAKE_EXE_LINKER_FLAGS": "-L/opt/homebrew/opt/llvm/lib/c++ -Wl,-rpath,/opt/homebrew/opt/llvm/lib/c++",
         "CMAKE_OSX_ARCHITECTURES": "arm64",
         "HEBE_ENABLE_LTO": "ON",
         "HEBE_ENABLE_STRIP": "ON"
@@ -89,13 +96,17 @@
       "name": "windows-arm64-debug",
       "displayName": "Windows ARM64 Debug",
       "inherits": "base",
-      "generator": "Visual Studio 17 2022",
-      "architecture": "ARM64",
+      "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "BISON_EXECUTABLE": "C:/ProgramData/chocolatey/bin/win_bison.exe",
-        "FLEX_EXECUTABLE": "C:/ProgramData/chocolatey/bin/win_flex.exe",
-        "LLVM_CONFIG_EXECUTABLE": "C:/Program Files/LLVM/bin/llvm-config.exe"
+	      "CMAKE_C_COMPILER": "C:/msys64/clangarm64/bin/clang.exe",
+	      "CMAKE_CXX_COMPILER": "C:/msys64/clangarm64/bin/clang++.exe",
+    	  "LLVM_CONFIG_EXECUTABLE": "C:/opt/llvm-14.0.6-arm64/bin/llvm-config.exe",
+	      "BISON_EXECUTABLE": "C:/msys64/usr/bin/bison.exe",
+    	  "FLEX_EXECUTABLE": "C:/msys64/usr/bin/flex.exe",
+	      "CMAKE_MAKE_PROGRAM": "C:/msys64/clangarm64/bin/ninja.exe",
+	      "HEBE_ENABLE_LTO": "OFF",
+    	  "HEBE_ENABLE_STRIP": "OFF"
       },
       "condition": {
         "type": "equals",
@@ -107,13 +118,15 @@
       "name": "windows-arm64-release",
       "displayName": "Windows ARM64 Release",
       "inherits": "base",
-      "generator": "Visual Studio 17 2022",
-      "architecture": "ARM64",
+      "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "BISON_EXECUTABLE": "C:/ProgramData/chocolatey/bin/win_bison.exe",
-        "FLEX_EXECUTABLE": "C:/ProgramData/chocolatey/bin/win_flex.exe",
-        "LLVM_CONFIG_EXECUTABLE": "C:/Program Files/LLVM/bin/llvm-config.exe",
+	      "CMAKE_C_COMPILER": "C:/msys64/clangarm64/bin/clang.exe",
+	      "CMAKE_CXX_COMPILER": "C:/msys64/clangarm64/bin/clang++.exe",
+    	  "LLVM_CONFIG_EXECUTABLE": "C:/opt/llvm-14.0.6-arm64/bin/llvm-config.exe",
+	      "BISON_EXECUTABLE": "C:/msys64/usr/bin/bison.exe",
+    	  "FLEX_EXECUTABLE": "C:/msys64/usr/bin/flex.exe",
+	      "CMAKE_MAKE_PROGRAM": "C:/msys64/clangarm64/bin/ninja.exe",
         "HEBE_ENABLE_LTO": "ON",
         "HEBE_ENABLE_STRIP": "OFF"
       },

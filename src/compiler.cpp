@@ -427,7 +427,7 @@ int Compiler::runJIT() {
 
   // Call it like a normal C function.
   using RunFn = float (*)();
-  auto addr = symExpected->getAddress();
+  auto addr = symExpected->getValue();
   auto runFn = reinterpret_cast<RunFn>(addr);
   float result = runFn();
 

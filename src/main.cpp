@@ -1,5 +1,3 @@
-#include <string>
-
 #include "ast/ast.h"
 #include "compiler.h"
 #include "logging.h"

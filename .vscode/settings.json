@@ -66,7 +66,7 @@
   "clangd.arguments": [
     "--compile-commands-dir=${command:cmake.buildDirectory}",
     "--background-index",
-    "--clang-tidy",
+    "--clang-tidy"
   ],
   "cSpell.words": [
     "addtmp",

@@ -7,6 +7,14 @@ ARG CMAKE_PKG=cmake
 ARG NINJA_PKG=ninja-build
 ARG FLEX_PKG=flex
 ARG BISON_PKG=bison
+ARG LLVM_21=llvm-21
+ARG LLVM_21_DEV=llvm-21-dev
+ARG CLANG_21=clang-21
+ARG CLANGD_21=clangd-21
+ARG CLANG_FORMAT_21=clang-format-21
+ARG LIBCPP_21=libc++-21-dev
+ARG LIBCPP_ABI_21_DEV=libc++abi-21-dev
+ARG LIBPATHREAD_STUBS0_DEV=libpthread-stubs0-dev
 ARG CA_CERTIFICATES_PKG=ca-certificates
 ARG GIT_PKG=git
 ARG WGET_PKG=wget
@@ -30,11 +38,14 @@ RUN set -eux; \
         ${NINJA_PKG:-ninja-build} \
         ${FLEX_PKG:-flex} \
         ${BISON_PKG:-bison} \
-        llvm-21 \
-        llvm-21-dev \
-        clang-21 \
-        clangd-21 \
-        clang-format-21 \
+        ${LLVM_21:-llvm-21}\
+        ${LLVM_21_DEV:-llvm-21-dev}\
+        ${CLANG_21:-clang-21}\
+        ${CLANGD_21:-clangd-21}\
+        ${CLANG_FORMAT_21:-clang-format-21}\
+        ${LIBCPP_21_DEV:-libc++-21-dev}\
+        ${LIBCPP_ABI_21_DEV:-libc++abi-21-dev}\
+        ${LIBPATHREAD_STUBS0_DEV:-libpthread-stubs0-dev}\
         ${GIT_PKG:-git} \
         ${WGET_PKG:-wget} \
         ${GDB_PKG:-gdb}; \

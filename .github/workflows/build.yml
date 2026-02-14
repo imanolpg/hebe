@@ -28,7 +28,7 @@ jobs:
       - name: Build with preset
         run: |
           docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace hebe-builder \
-            cmake --build build/linux-arm64-release --preset linux-arm64-release -- -j$(nproc)
+            cmake --build --preset linux-arm64-release
 
       - name: Copy built artifacts
         run: |

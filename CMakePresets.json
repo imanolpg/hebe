@@ -59,8 +59,8 @@
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "BISON_EXECUTABLE": "$env{HOME}/Desktop/bison3/bin/bison",
-        "FLEX_EXECUTABLE": "$env{HOME}/Desktop/flex/bin/flex",
+        "BISON_EXECUTABLE": "/opt/homebrew/opt/bison/bin/bison",
+        "FLEX_EXECUTABLE": "/opt/homebrew/opt/flex/bin/flex",
         "LLVM_CONFIG_EXECUTABLE": "/opt/homebrew/opt/llvm/bin/llvm-config",
         "CMAKE_C_COMPILER": "/opt/homebrew/opt/llvm/bin/clang",
         "CMAKE_CXX_COMPILER": "/opt/homebrew/opt/llvm/bin/clang++",
@@ -80,8 +80,8 @@
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "BISON_EXECUTABLE": "$env{HOME}/Desktop/bison3/bin/bison",
-        "FLEX_EXECUTABLE": "$env{HOME}/Desktop/flex/bin/flex",
+        "BISON_EXECUTABLE": "/opt/homebrew/opt/bison/bin/bison",
+        "FLEX_EXECUTABLE": "/opt/homebrew/opt/flex/bin/flex",
         "LLVM_CONFIG_EXECUTABLE": "/opt/homebrew/opt/llvm/bin/llvm-config",
         "CMAKE_C_COMPILER": "/opt/homebrew/opt/llvm/bin/clang",
         "CMAKE_CXX_COMPILER": "/opt/homebrew/opt/llvm/bin/clang++",

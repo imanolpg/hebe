@@ -1,0 +1,111 @@
+name: Build Release
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*.*.*"
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux-arm64:
+    name: Linux ARM64
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t hebe-builder .
+
+      - name: Configure with preset
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace hebe-builder \
+            cmake --preset linux-arm64-release
+
+      - name: Build with preset
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace hebe-builder \
+            cmake --build build/linux-arm64-release --preset linux-arm64-release -- -j$(nproc)
+
+      - name: Copy built artifacts
+        run: |
+          mkdir -p dist
+          docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace hebe-builder \
+            cp -r build/linux-arm64-release/ dist/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hebe-linux-arm64
+          path: dist/
+          if-no-files-found: error
+
+  macos-arm64:
+    name: macOS ARM64
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install ninja llvm@21 bison@3.8 flex
+
+      - name: Configure CMake
+        run: cmake --preset macos-arm64-release
+
+      - name: Build
+        run: cmake --build --preset macos-arm64-release
+
+      - name: Prepare artifact
+        run: |
+          mkdir -p dist
+          cp -r build/macos-arm64-release/ dist/
+          chmod +x dist/main
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hebe-macos-arm64
+          path: dist/
+          if-no-files-found: error
+
+  create-release:
+    name: Create Release
+    needs: [linux-arm64, macos-arm64]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create release archives
+        run: |
+          mkdir -p release
+          
+          # Linux
+          cd artifacts/hebe-linux-arm64
+          tar -czf ../../release/hebe-linux-arm64.tar.gz .
+          cd ../..
+          
+          # macOS
+          cd artifacts/hebe-macos-arm64
+          tar -czf ../../release/hebe-macos-arm64.tar.gz .
+          cd ../..
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            release/hebe-linux-arm64.tar.gz
+            release/hebe-macos-arm64.tar.gz
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

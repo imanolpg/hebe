@@ -3,15 +3,11 @@ cmake_minimum_required(VERSION 3.10)
 # ===============================================
 # Project setup
 
-# Set the project name and version
 project(Hebe VERSION 0.0.1)
 
-# Specify the C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# Set default build type to Release
-# Ensure that a build type exists and is: Debug or Release
 if(NOT CMAKE_CONFIGURATION_TYPES)
   set(allowed_build_types Debug Release)
   if(NOT CMAKE_BUILD_TYPE)
@@ -23,10 +19,11 @@ if(NOT CMAKE_CONFIGURATION_TYPES)
   endif()
 endif()
 
+include(FetchContent)
+
 # ===============================================
-# Spdlog library
-# Extract platform and architecture from CMAKE_BINARY_DIR path
-# workspace/build/linux-arm64-debug -> linux-arm64
+# FetchContent cache — keyed by platform/arch derived from the preset binary dir
+
 string(REGEX MATCH "build/([^/]+)" _ ${CMAKE_BINARY_DIR})
 set(PRESET_NAME ${CMAKE_MATCH_1})
 
@@ -50,20 +47,29 @@ else()
   set(PLATFORM_ARCH "${PLATFORM}-${ARCH}")
 endif()
 
-# Put FetchContent dependencies in platform-specific cache
 set(FETCHCONTENT_BASE_DIR
     "${CMAKE_SOURCE_DIR}/.cache/fetchcontent/${PLATFORM_ARCH}"
     CACHE PATH "FetchContent cache directory")
 message(STATUS "FetchContent cache: ${FETCHCONTENT_BASE_DIR}")
 
-# Load Spdlog library for logging
-include(FetchContent)
+# ===============================================
+# Spdlog
+
 FetchContent_Declare(
   spdlog
   GIT_REPOSITORY https://github.com/gabime/spdlog.git
   GIT_TAG v1.14.1
 )
 FetchContent_MakeAvailable(spdlog)
+
+# ===============================================
+# GoogleTest
+
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+)
+FetchContent_MakeAvailable(googletest)
 
 # ===============================================
 # Bison and Flex
@@ -138,6 +144,7 @@ if(LLVM_CONFIG_EXECUTABLE)
   separate_arguments(LLVM_SYSLIBS  NATIVE_COMMAND "${LLVM_SYSLIBS}")
 
   list(FILTER LLVM_CXXFLAGS EXCLUDE REGEX "^-std=")
+  list(FILTER LLVM_CXXFLAGS EXCLUDE REGEX "^-fno-exceptions")
 else()
   message(FATAL_ERROR
     "LLVM not found. Pass -DLLVM_CONFIG_EXECUTABLE=/path/to/llvm-config "
@@ -174,42 +181,71 @@ set(GENERATED_SOURCES
 )
 
 # ===============================================
-# Compilation
+# hebe_core — the library everything links against
 
-# Add all .cpp files in src to list SRC_FILES
 file(GLOB_RECURSE SRC_FILES "src/*.cpp")
 
-# Create executable main from all files in list SRC_FILES
-add_executable(main ${SRC_FILES} ${GENERATED_SOURCES})
+add_library(hebe_core STATIC ${SRC_FILES} ${GENERATED_SOURCES})
 
-# Apply LLVM flags correctly (ensures libs appear AFTER objects)
-target_compile_options(main PRIVATE ${LLVM_CXXFLAGS} -fexceptions)
-target_link_options(main PRIVATE ${LLVM_LDFLAGS})
-target_link_libraries(main PRIVATE ${LLVM_LIBS} ${LLVM_SYSLIBS} spdlog::spdlog)
-
-target_compile_definitions(main PRIVATE
-  $<$<CONFIG:Debug>:HEBE_DEBUG>
-  $<$<CONFIG:Release>:HEBE_RELEASE>
-)
-
-# Specify include directories for this target
-target_include_directories(main PRIVATE
+# PUBLIC so that main and hebe_tests inherit include paths and definitions
+target_include_directories(hebe_core PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/src/parser/bison
   ${CMAKE_CURRENT_SOURCE_DIR}/src/lexer/flex
   ${CMAKE_CURRENT_BINARY_DIR}/generated
-  ${LLVM_INCLUDE_DIRS}
 )
 
-# Release options
+target_include_directories(hebe_core PRIVATE ${LLVM_INCLUDE_DIRS})
+target_compile_options(hebe_core PRIVATE ${LLVM_CXXFLAGS})
+target_link_options(hebe_core PRIVATE ${LLVM_LDFLAGS})
+target_link_libraries(hebe_core PUBLIC ${LLVM_LIBS} ${LLVM_SYSLIBS} spdlog::spdlog)
+
+target_compile_definitions(hebe_core PUBLIC
+  $<$<CONFIG:Debug>:HEBE_DEBUG>
+  $<$<CONFIG:Release>:HEBE_RELEASE>
+)
+
 if(LLVM_DEFINITIONS)
-  target_compile_definitions(main PRIVATE ${LLVM_DEFINITIONS})
+  target_compile_definitions(hebe_core PUBLIC ${LLVM_DEFINITIONS})
 endif()
+
+# ===============================================
+# main — thin executable that links hebe_core
+
+add_executable(main src/main.cpp)
+target_include_directories(main PRIVATE ${LLVM_INCLUDE_DIRS})
+target_compile_options(main PRIVATE ${LLVM_CXXFLAGS})
+target_link_options(main PRIVATE ${LLVM_LDFLAGS})
+target_link_libraries(main PRIVATE hebe_core)
+
+# ===============================================
+# Release options
 
 option(HEBE_ENABLE_LTO "Enable LTO/IPO in Release builds" ON)
 option(HEBE_ENABLE_STRIP "Strip symbols in Release builds" ON)
 
-set_property(TARGET main PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE ${HEBE_ENABLE_LTO})
+set_property(TARGET hebe_core PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE ${HEBE_ENABLE_LTO})
+set_property(TARGET main      PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE ${HEBE_ENABLE_LTO})
+
 if(HEBE_ENABLE_STRIP)
   target_link_options(main PRIVATE $<$<CONFIG:Release>:-s>)
+endif()
+
+# ===============================================
+# Tests
+
+enable_testing()
+
+option(HEBE_ENABLE_TESTS "Build tests" OFF)
+
+if(HEBE_ENABLE_TESTS)
+  file(GLOB_RECURSE TEST_SOURCES "tests/*.cpp")
+  if(TEST_SOURCES)
+    add_executable(hebe_tests ${TEST_SOURCES})
+    target_link_libraries(hebe_tests PRIVATE hebe_core GTest::gtest_main)
+    include(GoogleTest)
+    gtest_discover_tests(hebe_tests)
+  else()
+    message(WARNING "No test sources found in tests/")
+  endif()
 endif()

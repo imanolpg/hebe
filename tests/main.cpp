@@ -1,11 +1,14 @@
-#include <cstdio>
+#include "logging.h"
 #include <gtest/gtest.h>
 
 int main(int argc, char** argv) {
-  printf("test binary started\n");
-  fflush(stdout);
+  // Init logger and remove sinks.
+  // The logger will offer the normal functionality but it wont print into the console.
+  logsys::init();
+  logsys::get()->sinks().clear();
+
   ::testing::InitGoogleTest(&argc, argv);
-  printf("gtest initialized\n");
-  fflush(stdout);
-  return RUN_ALL_TESTS();
+  int result = RUN_ALL_TESTS();
+  spdlog::shutdown(); // flushes all sinks
+  return result;
 }

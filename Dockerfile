@@ -1,7 +1,11 @@
 FROM ubuntu:22.04
+
 LABEL maintainer="Hebe contributors"
+
 ENV DEBIAN_FRONTEND=noninteractive
+
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 ARG BUILD_ESSENTIAL_PKG=build-essential
 ARG CMAKE_PKG=cmake
 ARG NINJA_PKG=ninja-build
@@ -19,6 +23,7 @@ ARG CA_CERTIFICATES_PKG=ca-certificates
 ARG GIT_PKG=git
 ARG WGET_PKG=wget
 ARG GDB_PKG=gdb
+
 RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
@@ -59,6 +64,18 @@ RUN set -eux; \
     \
     rm -rf /var/lib/apt/lists/*
 
+
+# Add Kitware repo for latest CMake
+RUN set -eux; \
+    wget -qO- https://apt.kitware.com/keys/kitware-archive-latest.asc | gpg --dearmor > /usr/share/keyrings/kitware.gpg; \
+    echo "deb [signed-by=/usr/share/keyrings/kitware.gpg] https://apt.kitware.com/ubuntu/ jammy main" \
+      > /etc/apt/sources.list.d/kitware.list; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends cmake; \
+    rm -rf /var/lib/apt/lists/*
+
 ENV LLVM_CONFIG=/usr/bin/llvm-config
+
 WORKDIR /workspace
+
 CMD ["/bin/bash"]

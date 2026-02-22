@@ -1,5 +1,6 @@
 #pragma once
 
+#include <llvm-21/llvm/IR/NoFolder.h>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Constant.h>
 #include <llvm/IR/Function.h>
@@ -17,11 +18,11 @@ public:
   // ================================================================================================
   // Constructor and destructor
 
-  Compiler(ASTNode* root) {
-    this->context = std::make_unique<llvm::LLVMContext>();
-    this->builder = std::make_unique<llvm::IRBuilder<>>(*context);
-    this->module = std::make_unique<llvm::Module>("MainModule", *context);
-    this->rootNode = root;
+  Compiler() { this->initializeLLVM(); }
+
+  Compiler(ASTNode* rootNode) {
+    this->initializeLLVM();
+    this->rootNode = rootNode;
   };
 
   ~Compiler() = default;
@@ -36,13 +37,27 @@ public:
 
   int runJIT();
 
+  // =================================================================================================
+  // Testing classes that will have access to private attributes and methods.
+
+  friend class Parsing_number_node_parsing_Test;
+  friend class Compiler_codegen_number_node_Test;
+  friend class Compiler_codegen_binary_op_node_Test;
+  friend class Compiler_codegen_assignment_node_Test;
+
 private:
   std::unique_ptr<llvm::LLVMContext> context;
+
+#ifdef HEBE_TESTS_ENABLED
+  std::unique_ptr<llvm::IRBuilder<llvm::NoFolder>> builder;
+#else
   std::unique_ptr<llvm::IRBuilder<>> builder;
+#endif
+
   std::unique_ptr<llvm::Module> module;
 
   // Node where Bison will save a ProgramNode with all the parsed AST.
-  ASTNode* rootNode;
+  ASTNode* rootNode = nullptr;
 
   // ===============================================================================================
   // Lookup tables
@@ -57,6 +72,8 @@ private:
   std::unordered_map<std::string, llvm::GlobalVariable*> globalVariableTable;
 
   // ================================================================================================
+
+  void initializeLLVM();
 
   llvm::Value* codegenExpr(ASTNode* node);
   llvm::Value* codegenNumber(ASTNode* inputNode);

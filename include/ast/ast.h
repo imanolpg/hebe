@@ -1,9 +1,10 @@
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+// TODO: create an ASTArena to handle the ownership of all AST nodes.
 
 enum class NodeType {
   Program,

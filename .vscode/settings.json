@@ -101,5 +101,6 @@
   "terminal.integrated.defaultProfile.linux": "bash-no-rc",
   // For finding CMake presets
   "cmake.useCMakePresets": "always",
-  "cmake.buildDirectory": "${workspaceFolder}/build/${presetName}"
+  "cmake.buildDirectory": "${workspaceFolder}/build/${presetName}",
+  "cmake.allowUnsupportedPresetsVersions": true,
 }

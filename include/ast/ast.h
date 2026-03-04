@@ -1,7 +1,10 @@
 #pragma once
 
 #include <string>
+#include <utility>
 #include <vector>
+
+// TODO: create an ASTArena to handle the ownership of all AST nodes.
 
 enum class NodeType {
   Program,
@@ -70,6 +73,11 @@ public:
       : ASTNode(NodeType::BinaryOp), op(o), left(l), right(r) {
     type = NodeType::BinaryOp;
   }
+
+  ~BinaryOpNode() override {
+    delete left;
+    delete right;
+  }
 };
 
 /**
@@ -83,6 +91,8 @@ public:
   ASTNode* value;
   AssignmentNode(std::string name, ASTNode* value)
       : ASTNode(NodeType::Assignment), name(std::move(name)), value(value) {}
+
+  ~AssignmentNode() override { delete value; }
 };
 
 /**
@@ -121,6 +131,8 @@ public:
 
   ProcedureNode(std::string name, ASTNode* body)
       : ASTNode(NodeType::Procedure), name(std::move(name)), body(body) {}
+
+  ~ProcedureNode() override { delete body; }
 };
 
 /**

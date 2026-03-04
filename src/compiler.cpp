@@ -6,6 +6,7 @@
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/NoFolder.h>
 #include <llvm/Support/Errc.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/TargetSelect.h>
@@ -13,6 +14,18 @@
 
 #include "ast/ast.h"
 #include "logging.h"
+
+void Compiler::initializeLLVM() {
+  this->context = std::make_unique<llvm::LLVMContext>();
+
+#ifdef HEBE_TESTS_ENABLED
+  this->builder = std::make_unique<llvm::IRBuilder<llvm::NoFolder>>(*context);
+#else
+  this->builder = std::make_unique<llvm::IRBuilder<>>(*context);
+#endif
+
+  this->module = std::make_unique<llvm::Module>("MainModule", *context);
+}
 
 void Compiler::printNodeTree(ASTNode* node, int depth) {
   // First initialize the node to start printing. This is required because the method can be called
@@ -352,6 +365,12 @@ llvm::Value* Compiler::codegenExpr(ASTNode* node) {
 void Compiler::generateCode() {
   logsys::get()->info("Executing generateCode");
 
+  // Ensure there is a list of nodes.
+  if (!this->rootNode) {
+    logsys::get()->error("No code provided. rootNode is empty");
+    throw std::runtime_error("Failed to generate code.");
+  }
+
   // Create main function where the code will run.
   llvm::FunctionType* mainFuncTy = this->createFunctionType(llvm::Type::getFloatTy(*this->context));
   this->getOrCreateFunction("run", mainFuncTy);
@@ -384,8 +403,8 @@ void Compiler::generateCode() {
         this->builder->CreateLoad(llvm::Type::getFloatTy(*this->context), retPtr);
     this->builder->CreateRet(retValue);
   } else {
-    logsys::get()->error("Failed to generate expression!");
-    this->builder->CreateRet(llvm::ConstantInt::get(llvm::Type::getFloatTy(*this->context), 1.0));
+    logsys::get()->error("Failed to generate code. Last evaluated expression has an error.");
+    throw std::runtime_error("Failed to generate code. Last evaluated expression has an error.");
   }
 }
 

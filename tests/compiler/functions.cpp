@@ -1,12 +1,13 @@
 #include <cstdio>
 #include <gtest/gtest.h>
-#include <llvm-21/llvm/IR/Constant.h>
-#include <llvm-21/llvm/IR/Constants.h>
-#include <llvm-21/llvm/IR/InstrTypes.h>
-#include <llvm-21/llvm/IR/Instruction.h>
-#include <llvm-21/llvm/IR/Type.h>
-#include <llvm-21/llvm/Support/Casting.h>
+#include <llvm/IR/Constant.h>
+#include <llvm/IR/Constants.h>
+#include <llvm/IR/GlobalVariable.h>
+#include <llvm/IR/InstrTypes.h>
+#include <llvm/IR/Instruction.h>
+#include <llvm/IR/Type.h>
 #include <llvm/IR/Value.h>
+#include <llvm/Support/Casting.h>
 #include <regex>
 #include <spdlog/sinks/ostream_sink.h>
 #include <spdlog/spdlog.h>
@@ -154,14 +155,33 @@ TEST(Compiler_codegen, binary_op_node) {
 
 TEST(Compiler_codegen, assignment_node) {
 
-  std::string variableName = "varName";
-  NumberNode* numberNodeAST = new NumberNode(0.0);
-  AssignmentNode* assignmentNodeAST = new AssignmentNode(variableName, numberNodeAST);
-  ProgramNode* programNode = new ProgramNode();
-  programNode->append(assignmentNodeAST);
+  float numbers[3] = {-12.00, 0.00, 12345.67};
 
-  Compiler c = Compiler(programNode);
-  c.generateCode();
+  for (float numberValue : numbers) {
+    std::string variableName = "varName";
+
+    NumberNode* numberNodeAST = new NumberNode(numberValue);
+    AssignmentNode* assignmentNodeAST = new AssignmentNode(variableName, numberNodeAST);
+
+    // In order to store values CreateStore method is used and it requires a basic block and cursor.
+    // Before running codegenExpr all this start requirements should be created.
+    Compiler c = Compiler();
+
+    // Create main function where the code will run.
+    llvm::FunctionType* mainFuncTy = c.createFunctionType(llvm::Type::getFloatTy(*c.context));
+    c.getOrCreateFunction("run", mainFuncTy);
+
+    // Create the basic block that will be executed on program start.
+    llvm::BasicBlock* entry = c.createBasicBlock("entry", "run");
+    c.builder->SetInsertPoint(entry);
+
+    llvm::Value* expression = c.codegenExpr(assignmentNodeAST);
+
+    EXPECT_NE(expression, nullptr);
+
+    // Expect the expression is a constant.
+    EXPECT_TRUE(llvm::isa<llvm::Constant>(expression));
+  }
 
   SUCCEED();
 }

@@ -53,7 +53,7 @@ jobs:
           -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm@21/bin/clang \
           -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm@21/bin/clang++ \
           -DLLVM_CONFIG_EXECUTABLE=/opt/homebrew/opt/llvm@21/bin/llvm-config \
-          -DCMAKE_EXE_LINKER_FLAGS:-L/opt/homebrew/opt/llvm/@21lib/c++ -Wl,-rpath,/opt/homebrew/opt/llvm@21/lib/c++
+          -DCMAKE_EXE_LINKER_FLAGS:-L/opt/homebrew/opt/llvm@21/lib/c++ -Wl,-rpath,/opt/homebrew/opt/llvm@21/lib/c++
 
       - name: Build
         run: cmake --build --preset macos-arm64-debug-tests

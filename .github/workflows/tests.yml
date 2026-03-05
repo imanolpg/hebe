@@ -46,14 +46,11 @@ jobs:
         run: |
           brew update
           brew install ninja llvm@21 bison@3.8 flex
+          brew link --force llvm@21
+          echo "/opt/homebrew/opt/llvm@21/bin" >> $GITHUB_PATH
 
       - name: Configure CMake
-        run: |
-          cmake --preset macos-arm64-debug-tests \
-          -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm@21/bin/clang \
-          -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm@21/bin/clang++ \
-          -DLLVM_CONFIG_EXECUTABLE=/opt/homebrew/opt/llvm@21/bin/llvm-config \
-          -DCMAKE_EXE_LINKER_FLAGS=-L/opt/homebrew/opt/llvm@21/lib/c++ -Wl,-rpath,/opt/homebrew/opt/llvm@21/lib/c++
+        run: cmake --preset macos-arm64-debug-tests
 
       - name: Build
         run: cmake --build --preset macos-arm64-debug-tests

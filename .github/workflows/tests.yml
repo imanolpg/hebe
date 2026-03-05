@@ -51,7 +51,8 @@ jobs:
         run: |
           cmake --preset macos-arm64-debug-tests \
           -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm@21/bin/clang \
-          -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm@21/bin/clang++
+          -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm@21/bin/clang++ \
+          -DLLVM_CONFIG_EXECUTABLE=/opt/homebrew/opt/llvm@21/bin/llvm-config
 
       - name: Build
         run: cmake --build --preset macos-arm64-debug-tests

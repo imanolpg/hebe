@@ -48,6 +48,9 @@ jobs:
         run: |
           brew update
           brew install ninja llvm@21 bison@3.8 flex
+
+      - name: Start tmux
+        run: tmux new-session -d -s main
       
       - name: Setup upterm session
         uses: lhotari/action-upterm@v1

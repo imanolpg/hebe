@@ -47,6 +47,9 @@ jobs:
           brew update
           brew install ninja llvm@21 bison@3.8 flex
 
+      - name: Add LLVM bin to PATH
+        run: echo "/opt/homebrew/opt/llvm@21/bin" >> $GITHUB_PATH
+
       - name: Configure CMake
         run: cmake --preset macos-arm64-debug-tests
 

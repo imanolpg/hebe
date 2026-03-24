@@ -56,3 +56,6 @@ compile_commands.json
 
 # Test reports
 Testing
+
+# Generated documentation
+docs/

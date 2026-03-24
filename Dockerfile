@@ -23,6 +23,10 @@ ARG CA_CERTIFICATES_PKG=ca-certificates
 ARG GIT_PKG=git
 ARG WGET_PKG=wget
 ARG GDB_PKG=gdb
+ARG DOXYGEN=doxygen
+ARG DOXYGEN_GUI=doxygen-gui
+ARG GRAPHVIZ=graphviz
+
 
 RUN set -eux; \
     apt-get update; \
@@ -53,7 +57,10 @@ RUN set -eux; \
         ${LIBPATHREAD_STUBS0_DEV:-libpthread-stubs0-dev}\
         ${GIT_PKG:-git} \
         ${WGET_PKG:-wget} \
-        ${GDB_PKG:-gdb}; \
+        ${GDB_PKG:-gdb} \
+        ${DOXYGEN:-doxygen} \
+        ${DOXYGEN_GUI:-doxygen-gui} \
+        ${GRAPHVIZ:-graphviz}; \
     \
 # Make clang-21 the default clang
     update-alternatives --install /usr/bin/clang   clang   /usr/bin/clang-21   100; \

@@ -13,7 +13,8 @@
             "binaryDir": "${sourceDir}/build/${presetName}",
             "cacheVariables": {
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-                "HEBE_ENABLE_TESTS": "OFF"
+                "HEBE_ENABLE_TESTS": "OFF",
+                "GENERATE_DOCS": "OFF"
             }
         },
         {
@@ -123,6 +124,14 @@
                 "lhs": "${hostSystemName}",
                 "rhs": "Darwin"
             }
+        },
+        {
+            "name": "generate-docs",
+            "displayName": "Generate Documentation",
+            "inherits": "base",
+            "cacheVariables": {
+                "GENERATE_DOCS": "ON"
+            }
         }
     ],
     "buildPresets": [
@@ -149,6 +158,10 @@
         {
             "name": "macos-arm64-debug-tests",
             "configurePreset": "macos-arm64-debug-tests"
+        },
+        {
+            "name": "generate-docs",
+            "configurePreset": "generate-docs"
         }
     ],
     "testPresets": [

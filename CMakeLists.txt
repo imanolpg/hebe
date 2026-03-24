@@ -283,3 +283,19 @@ if(HEBE_ENABLE_TESTS)
     message(WARNING "No test sources found in tests/")
   endif()
 endif()
+
+# ===============================================
+# Documentation
+
+if(GENERATE_DOCS)
+    find_package(Doxygen REQUIRED)
+
+    if(DOXYGEN_FOUND)
+        add_custom_target(docs
+            COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_SOURCE_DIR}/Doxyfile
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            COMMENT "Generating documentation"
+            VERBATIM
+        )
+    endif()
+endif()

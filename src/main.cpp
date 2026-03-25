@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
     compiler.printNodeTree();
   if (isDebug)
     compiler.printLLVMIR();
-  if (isDebug)
+  if (isDebug && EXPORT_IR_CODE)
     compiler.exportIRToFile("output_code.ll");
   exitCode = compiler.runJIT();
 

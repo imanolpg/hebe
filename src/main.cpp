@@ -1,46 +1,56 @@
+#include "main.h"
 #include "ast/ast.h"
 #include "compiler.h"
 #include "logging.h"
-
-extern int yyparse(); // Declaration of the parsing function.
-extern ASTNode* root; // Defined in grammar.
-extern FILE* yyin;    // Defined in grammar.
-
-constexpr bool isDebug =
-#ifdef HEBE_DEBUG
-    true;
-#else
-    false;
-#endif
+#include "parser/parser.h"
+#include <cstdlib>
+#include <ios>
 
 int main(int argc, char** argv) {
 
-  // Read code file.
-  if (argc > 1) {
-    yyin = fopen(argv[1], "r");
-    if (!yyin) {
-      perror("fopen");
-      return 1;
-    }
-  }
+  parser::UniqueFile sourceCode;
+  ASTNode* rootNode;
 
   int exitCode;
 
-  // Call yyparse() and check its return value for errors
-  if (yyparse() == 0) {
-    Compiler compiler = Compiler(root);
-    compiler.generateCode();
-    if (isDebug)
-      compiler.printNodeTree();
-    if (isDebug)
-      compiler.printLLVMIR();
-    if (isDebug)
-      compiler.exportIRToFile("output_code.ll");
-    exitCode = compiler.runJIT();
-  } else {
-    logsys::get()->error("Parsing error occurred!");
-    return 1;
+  // Allow only one param.
+  if (argc != 2) {
+    logsys::get()->error("Only one argument is expected.");
+    return -1;
   }
+
+  // Read the code from the file.
+  try {
+    sourceCode = parser::readFile(argv[1]);
+  } catch (const std::ios_base::failure& e) {
+    logsys::get()->error("Error reading code file: {}", e.what());
+    return -1;
+  }
+
+  // Parse the input code.
+  try {
+    rootNode = parser::parseCode(sourceCode.get());
+  } catch (const parser::SyntaxError& e) {
+    logsys::get()->error("Error parsing code: {}", e.what());
+    return -1;
+  } catch (const parser::MemoryExhaustion& e) {
+    logsys::get()->error("Error parsing code: {}", e.what());
+    return -1;
+  } catch (const std::exception& e) {
+    logsys::get()->error("Unexpected error during parsing: {}", e.what());
+    return -1;
+  }
+
+  // Call yyparse() and check its return value for errors
+  Compiler compiler = Compiler(rootNode);
+  compiler.generateCode();
+  if (isDebug)
+    compiler.printNodeTree();
+  if (isDebug)
+    compiler.printLLVMIR();
+  if (isDebug)
+    compiler.exportIRToFile("output_code.ll");
+  exitCode = compiler.runJIT();
 
   return exitCode;
 }

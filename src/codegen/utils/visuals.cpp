@@ -1,5 +1,11 @@
+#include "ast/assignmentNode.h"
+#include "ast/binaryOpNode.h"
+#include "ast/numberNode.h"
+#include "ast/procedure/procedureBodyNode.h"
+#include "ast/procedure/procedureCallNode.h"
+#include "ast/procedure/procedureNode.h"
+#include "ast/programNode.h"
 #include "codegen/codegen.h"
-
 #include "logging.h"
 
 void CodeGen::printNodeTree(ASTNode* node, int depth) {

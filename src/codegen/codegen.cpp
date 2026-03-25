@@ -1,6 +1,6 @@
 #include "codegen/codegen.h"
 
-#include "ast/ast.h"
+#include "ast/programNode.h"
 #include "logging.h"
 
 llvm::Value* CodeGen::codegenExpr(ASTNode* node) {

@@ -1,10 +1,12 @@
 #include "main.h"
-#include "ast/ast.h"
-#include "compiler.h"
-#include "logging.h"
-#include "parser/parser.h"
+
 #include <cstdlib>
 #include <ios>
+
+#include "ast/ast.h"
+#include "codegen/codegen.h"
+#include "logging.h"
+#include "parser/parser.h"
 
 int main(int argc, char** argv) {
 
@@ -42,7 +44,7 @@ int main(int argc, char** argv) {
   }
 
   // Call yyparse() and check its return value for errors
-  Compiler compiler = Compiler(rootNode);
+  CodeGen compiler = CodeGen(rootNode);
   compiler.generateCode();
   if (isDebug)
     compiler.printNodeTree();

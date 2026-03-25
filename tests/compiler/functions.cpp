@@ -14,27 +14,27 @@
 #include <stdexcept>
 
 #include "ast/ast.h"
-#include "compiler.h"
+#include "codegen/codegen.h"
 #include "logging.h"
 
 TEST(Compiler, create_compiler_object) {
-  Compiler c = Compiler();
+  CodeGen c = CodeGen();
   EXPECT_NE(&c, nullptr);
 }
 
 TEST(Compiler, create_compiler_oject_with_rootNode) {
   ASTNode rootNode = ASTNode(NodeType::Program);
-  Compiler c = Compiler(&rootNode);
+  CodeGen c = CodeGen(&rootNode);
   EXPECT_NE(&c, nullptr);
 }
 
 TEST(Compiler, call_generateCode_with_no_rootNode) {
-  Compiler c = Compiler();
+  CodeGen c = CodeGen();
   EXPECT_THROW(c.generateCode(), std::runtime_error);
 }
 
 TEST(Compiler, print_node_tree_with_no_nodes) {
-  Compiler c = Compiler();
+  CodeGen c = CodeGen();
   EXPECT_THROW(c.printNodeTree(), std::runtime_error);
 }
 
@@ -56,7 +56,7 @@ TEST(Compiler, print_node_tree_with_number_node) {
 
   // Begin the actual testing.
   NumberNode num(0.0);
-  Compiler c(&num);
+  CodeGen c(&num);
   c.printNodeTree(&num);
 
   std::regex pattern("\\[\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\] "
@@ -82,7 +82,7 @@ TEST(Compiler_codegen, number_node) {
     NumberNode numberNode = NumberNode(testValue);
     ASTNode* numberNodeAST = static_cast<ASTNode*>(&numberNode);
 
-    Compiler c = Compiler();
+    CodeGen c = CodeGen();
     llvm::Value* expression = c.codegenExpr(numberNodeAST);
 
     // The expression should be of type Float.
@@ -113,7 +113,7 @@ TEST(Compiler_codegen, binary_op_node) {
         BinaryOpNode binOpNode = BinaryOpNode(op, leftNodeAST, rightNodeAST);
         ASTNode* binOpNodeAST = static_cast<ASTNode*>(&binOpNode);
 
-        Compiler c = Compiler();
+        CodeGen c = CodeGen();
 
         // Evaluate node.
         llvm::Value* expression = c.codegenExpr(binOpNodeAST);
@@ -165,7 +165,7 @@ TEST(Compiler_codegen, assignment_node) {
 
     // In order to store values CreateStore method is used and it requires a basic block and cursor.
     // Before running codegenExpr all this start requirements should be created.
-    Compiler c = Compiler();
+    CodeGen c = CodeGen();
 
     // Create main function where the code will run.
     llvm::FunctionType* mainFuncTy = c.createFunctionType(llvm::Type::getFloatTy(*c.context));

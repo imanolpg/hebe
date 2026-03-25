@@ -9,23 +9,22 @@
 #include <llvm/IR/NoFolder.h>
 #include <memory>
 #include <string>
-#include <unordered_map>
 
 #include "ast/ast.h"
 
-class Compiler {
+class CodeGen {
 public:
   // ================================================================================================
   // Constructor and destructor
 
-  Compiler() { this->initializeLLVM(); }
+  CodeGen() { this->initializeLLVM(); }
 
-  Compiler(ASTNode* rootNode) {
+  CodeGen(ASTNode* rootNode) {
     this->initializeLLVM();
     this->rootNode = rootNode;
   };
 
-  ~Compiler() = default;
+  ~CodeGen() = default;
 
   // =================================================================================================
 

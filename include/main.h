@@ -6,3 +6,5 @@ constexpr bool isDebug =
 #else
     false;
 #endif
+
+#define EXPORT_IR_CODE false

@@ -215,7 +215,7 @@ file(GLOB_RECURSE SRC_FILES "src/*.cpp")
 add_library(hebe_core STATIC ${SRC_FILES} ${GENERATED_SOURCES})
 
 # Set paths of project header files
-# PUBLIC so that main and hebe_tests inherit include paths and definitions
+# PUBLIC so that hebe and hebe_tests inherit include paths and definitions
 target_include_directories(hebe_core PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/src/parser/bison
@@ -244,12 +244,12 @@ target_compile_definitions(hebe_core PUBLIC
 )
 
 # ===============================================
-# main — thin executable that links hebe_core
+# hebe — thin executable that links hebe_core
 
-add_executable(main src/main.cpp)
-target_compile_options(main PRIVATE ${LLVM_CXXFLAGS})
-target_link_options(main PRIVATE ${LLVM_LDFLAGS})
-target_link_libraries(main PRIVATE hebe_core)
+add_executable(hebe src/main.cpp)
+target_compile_options(hebe PRIVATE ${LLVM_CXXFLAGS})
+target_link_options(hebe PRIVATE ${LLVM_LDFLAGS})
+target_link_libraries(hebe PRIVATE hebe_core)
 
 # ===============================================
 # Release options
@@ -258,10 +258,10 @@ option(HEBE_ENABLE_LTO "Enable LTO/IPO in Release builds" ON)
 option(HEBE_ENABLE_STRIP "Strip symbols in Release builds" ON)
 
 set_property(TARGET hebe_core PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE ${HEBE_ENABLE_LTO})
-set_property(TARGET main      PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE ${HEBE_ENABLE_LTO})
+set_property(TARGET hebe      PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE ${HEBE_ENABLE_LTO})
 
 if(HEBE_ENABLE_STRIP)
-  target_link_options(main PRIVATE $<$<CONFIG:Release>:-s>)
+  target_link_options(hebe PRIVATE $<$<CONFIG:Release>:-s>)
 endif()
 
 # ===============================================

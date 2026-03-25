@@ -32,7 +32,7 @@ ASTNode* root;
 %left '+' '-'
 %left '*' '/'
 
-%type <node> input line expression assignment procedureBody procedure procedureCall showCall showArguments
+%type <node> input line expression assignment procedureBody procedure procedureCall
 
 %%
 
@@ -79,15 +79,6 @@ procedure
 
 procedureCall
   : WORD                        { $$ = new ProcedureCallNode($1); }
-  ;
-
-showCall
-  : SHOW showArguments
-  ;
-
-showArguments
-  : ARROW WORD showArguments
-  | WORD showArguments
   ;
 
 %%

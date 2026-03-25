@@ -1,4 +1,6 @@
-#include "ast/ast.h"
+#include "ast/nodeType.h"
+
+#include <string>
 
 std::string getNodeType(NodeType type) {
   switch (type) {

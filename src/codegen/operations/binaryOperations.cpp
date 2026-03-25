@@ -1,3 +1,4 @@
+#include "ast/binaryOpNode.h"
 #include "codegen/codegen.h"
 
 #include "logging.h"

@@ -1,3 +1,4 @@
+#include "ast/assignmentNode.h"
 #include "codegen/codegen.h"
 
 llvm::Value* CodeGen::codegenAssignment(ASTNode* inputNode) {

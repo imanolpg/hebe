@@ -1,3 +1,6 @@
+#include "ast/procedure/procedureBodyNode.h"
+#include "ast/procedure/procedureCallNode.h"
+#include "ast/procedure/procedureNode.h"
 #include "codegen/codegen.h"
 
 #include "logging.h"

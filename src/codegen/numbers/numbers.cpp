@@ -1,3 +1,4 @@
+#include "ast/numberNode.h"
 #include "codegen/codegen.h"
 
 llvm::Value* CodeGen::codegenNumber(ASTNode* inputNode) {

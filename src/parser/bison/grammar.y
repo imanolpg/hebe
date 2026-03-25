@@ -1,5 +1,11 @@
 %code requires {
-    #include "ast/ast.h"
+    #include "ast/assignmentNode.h"
+    #include "ast/binaryOpNode.h"
+    #include "ast/numberNode.h"
+    #include "ast/procedure/procedureBodyNode.h"
+    #include "ast/procedure/procedureCallNode.h"
+    #include "ast/procedure/procedureNode.h"
+    #include "ast/programNode.h"
     #include "logging.h"
 }
 
@@ -7,6 +13,7 @@
 #include <iostream>
 #include <memory>
 #include "ast/ast.h"
+
 
 extern int yylex();
 void yyerror(const char *s);
